@@ -4,6 +4,8 @@ import pyrogram
 
 __all__ = ["TgJSON"]
 
+extended_json_type = "__extended_json_type"
+
 class ExtendedEncoder(json.JSONEncoder):
     def default(self, obj):
         name = type(obj).__name__
@@ -13,7 +15,7 @@ class ExtendedEncoder(json.JSONEncoder):
             super().default(obj)
         else:
             encoded = encoder(obj)
-            encoded["__extended_json_type__"] = name
+            encoded[extended_json_type] = name
             return encoded
 
 class ExtendedDecoder(json.JSONDecoder):
@@ -23,7 +25,7 @@ class ExtendedDecoder(json.JSONDecoder):
 
     def object_hook(self, obj):
         try:
-            name = obj["__extended_json_type__"]
+            name = obj[extended_json_type]
             decoder = getattr(self, f"decode_{name}")
         except (KeyError, AttributeError):
             return obj
